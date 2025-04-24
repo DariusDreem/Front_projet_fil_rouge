@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { ITrainer } from "../type/Trainer";
 import axios from "axios";
 import { IPokemon } from "../type/Pokemon";
@@ -11,19 +11,19 @@ let Trainers: ITrainer[] = [
     },
     {
         name: "Misty",
-        picture: "https://example.com/misty.png",
+        picture: "https://archives.bulbagarden.net/media/upload/9/90/Misty_Burnt_Bike.png",
         age: 12,
         Pokedollars: 2000,
     },
     {
         name: "Brock",
-        picture: "https://example.com/brock.png",
+        picture: "https://i.chzbgr.com/full/8435283968/hF976F717/brock-with-rock-lees-eyes",
         age: 15,
         Pokedollars: 3000,
     },
     {
         name: "Gary",
-        picture: "https://example.com/gary.png",
+        picture: "https://preview.redd.it/whats-your-favorite-meme-freeze-frame-involving-gary-v0-4vmxzjsqdw9d1.jpeg?width=858&format=pjpg&auto=webp&s=4e75e81bc264454328bc904c555a5c79bc8781f4",
         age: 16,
         Pokedollars: 4000,
         catchedPokemons: [],
@@ -31,6 +31,9 @@ let Trainers: ITrainer[] = [
 ]
 
 function ProfilPage() {
+
+    const [currentTrainer, setCurrentTrainer] = useState<ITrainer | null>(null);
+
     function definePokemonGender(male: number, Female: number) {
         let randomNumber = Math.floor(Math.random())
         if (randomNumber < male / 100) {
@@ -41,12 +44,6 @@ function ProfilPage() {
         }
     }
 
-    function definePokemonHp(level: number = 1) {
-        let baseHp = 50; // Base HP for the Pokemon
-        let iv = Math.floor(Math.random() * 32); // IV between 0 and 31
-        let ev = Math.floor(Math.random() * 256); // EV between 0 and 255
-        return Math.floor((2 * baseHp + iv + (ev / 4)) * level / 100) + level + 10;
-    }
 
     function definePokemonIsShiny() {
         let randomNumber = Math.floor(Math.random() * 100);
@@ -58,50 +55,51 @@ function ProfilPage() {
         }
     }
 
-    function getPokemonApiDataById(id: string) {
+    async function getPokemonApiDataById(id: string) {
         let result = {} as IPokemon;
-        axios.get('https://tyradex.vercel.app/api/v1/pokemon/' + id)
-            .then((response) => {
-                let tempoResponse = response.data;
-                console.log(tempoResponse);
-                let pokemonData: IPokemon = {
-                    name: tempoResponse.name,
-                    gender: tempoResponse.sexe ? definePokemonGender(tempoResponse.sexe.male, tempoResponse.sexe.femelle) : "Unknown",
-                    type: tempoResponse.types.name,
-                    natures: tempoResponse.talents,
-                    shiny: definePokemonIsShiny(),
-                    IV: [
-                        tempoResponse.stats.hp,
-                        tempoResponse.stats.atk,
-                        tempoResponse.stats.def,
-                        tempoResponse.stats.spd,
-                        tempoResponse.stats.spe_atk,
-                        tempoResponse.stats.spe_def,
-                    ],
-                    EV: {
-                        HP: Math.floor(Math.random() * 256),
-                        Attack: Math.floor(Math.random() * 256),
-                        Defense: Math.floor(Math.random() * 256),
-                        Speed: Math.floor(Math.random() * 256),
-                        SpecialAttack: Math.floor(Math.random() * 256),
-                        SpecialDefense: Math.floor(Math.random() * 256)
-                    },
-                }
-                result = pokemonData;
-            })
-            .catch((error) => {
-                console.error("Error fetching data:", error);
-                throw error;
-            },
-            );
+        try {
+            const response = await axios.get('https://tyradex.vercel.app/api/v1/pokemon/' + id);
+            console.log(response.data);
+            result = await assignPokemonDataToIPokemon(response.data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            throw error;
+        }
         return result;
     }
 
-    const [currentTrainer, setCurrentTrainer] = useState<ITrainer | null>(null);
+    async function assignPokemonDataToIPokemon(data: any) {
+        let pokemonData: IPokemon = {
+            name: data.name.fr,
+            gender: data.sexe ? definePokemonGender(data.sexe.male, data.sexe.femelle) : "Unknown",
+            type: data.types.name,
+            natures: data.talents,
+            shiny: definePokemonIsShiny(),
+            IV: [
+                data.stats.hp,
+                data.stats.atk,
+                data.stats.def,
+                data.stats.spd,
+                data.stats.spe_atk,
+                data.stats.spe_def,
+            ],
+            EV: {
+                HP: Math.floor(Math.random() * 256),
+                Attack: Math.floor(Math.random() * 256),
+                Defense: Math.floor(Math.random() * 256),
+                Speed: Math.floor(Math.random() * 256),
+                SpecialAttack: Math.floor(Math.random() * 256),
+                SpecialDefense: Math.floor(Math.random() * 256)
+            },
+        }
+        return pokemonData;
+    }
+
     function getTrainerByName(name: string) {
         console.log(Trainers.find((trainer) => trainer.name === name))
         return Trainers.find((trainer) => trainer.name === name);
     }
+
     function updateCurrentTrainer(trainer: ITrainer | undefined) {
         if (!trainer) {
             console.error("Trainer not found");
@@ -109,6 +107,11 @@ function ProfilPage() {
         }
         setCurrentTrainer(trainer);
     }
+
+    useEffect(() => {
+        console.log("Current Trainer:", currentTrainer);
+    }, [currentTrainer]);
+
     return (
         <div>
             <h1>Choose a Trainer's profile </h1>
@@ -124,7 +127,22 @@ function ProfilPage() {
                 ))}
 
             </ul>
+            <button id="CatchButton" onClick={async () => {
+                let pokemonId = Math.floor(Math.random() * 1025); // Random Pokemon ID
+                const pokemonData = await getPokemonApiDataById(pokemonId.toString());
 
+                if (currentTrainer && pokemonData) {
+                    currentTrainer.catchedPokemons = currentTrainer.catchedPokemons;
+                    setCurrentTrainer({
+                        ...currentTrainer,
+                        catchedPokemons: [...(currentTrainer.catchedPokemons || []), pokemonData]
+                    });
+                    console.log("Pokemon caught:", pokemonData);
+                }
+            }}
+            >
+                Catch Pokemon
+            </button>
             {currentTrainer ? (
                 <div>
                     <p>Catched pokemon's of : {currentTrainer.name}</p>
@@ -139,16 +157,7 @@ function ProfilPage() {
                     <p>No trainer found</p>
                 )
             }
-            <button id="CatchButton" onClick={() => {
-                let pokemonId = Math.floor(Math.random() * 700); // Random Pokemon ID
-                let pokemonData: IPokemon = getPokemonApiDataById(pokemonId.toString());
-                if (currentTrainer) {
-                    currentTrainer.catchedPokemons?.push();
-                    console.log("Pokemon caught:", pokemonData);
-                }
-            }
-            }
-            ></button>
+
         </div >
 
     );
