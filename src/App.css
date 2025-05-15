@@ -72,3 +72,51 @@
 .read-the-docs {
   color: #888;
 }
+
+#GenerationsButton {
+  border-radius: 10px;
+  border: none;
+  height: 50px;
+  width: 100px;
+
+}
+
+#GenerationsButton:hover {
+  background-color: #606060;
+  color: white;
+}
+
+#GenerationsList {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 0;
+  margin: 0;
+}
+
+.pokemon-card {
+  background-color: #696969;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pokemon-card img {
+  width: 150px;
+  height: 150px;
+}
+
+.types img {
+  width: 24px;
+  height: 24px;
+  margin: 2px;
+}

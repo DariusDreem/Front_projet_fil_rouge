@@ -1,5 +1,12 @@
 export type IPokemon = {
+    id: number;
     name: string;
+    category: string;
+    sprite: [
+        regular: string,
+        shiny: string,
+        gmax: string,
+    ]
     gender: "Male" | "Female" | "Unknown";
     type: string[];
     natures: string[];
