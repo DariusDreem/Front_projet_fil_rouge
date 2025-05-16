@@ -12,7 +12,7 @@ function PokemonPage() {
 
     async function getPokemon() {
         try {
-            const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+            const response = await axios.get(`https://tyradex.vercel.app/api/v1/pokemon/${pokemonId}`);
             setPokemon(response.data);
         } catch (error) {
             console.error("Error fetching Pokemon data:", error);
@@ -33,16 +33,17 @@ function PokemonPage() {
                 <p>Loading...</p>
             ) : pokemon ? (
                 <div className="pokemon-details">
-                    <h2>{pokemon.name}</h2>
-                    <img src={pokemon.sprites.front_default} alt={pokemon.name} />
+                    <h2>{pokemon.name.fr}</h2>
+                    <img src={pokemon.sprites.regular} alt={pokemon.name.fr} />
                     <h3>Types:</h3>
                     <div className="types">
                         {pokemon.types.map((typeObj, idx) => (
                             <span key={idx} className="type">
-                                {typeObj.type.name}
+                                <img src={typeObj.image} alt={typeObj.name} />
                             </span>
                         ))}
                     </div>
+                    <h3>Category: {pokemon.category}</h3>
                 </div>
             ) : (
                 <p>Pokemon not found</p>

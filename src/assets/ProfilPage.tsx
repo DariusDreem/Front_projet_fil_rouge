@@ -1,9 +1,10 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ITrainer } from "../type/Trainer";
 import axios from "axios";
 import { IPokemon } from "../type/Pokemon";
 import { useAppDispatch } from "../hook/useAppDispatch";
 import { useAppSelector } from "../hook/useAppSelector";
+import { useGetGenQuery } from "../api/pokemonApi";
 
 
 // let Trainers: ITrainer[] = [
@@ -41,10 +42,10 @@ function ProfilPage() {
 
     const dispatch = useAppDispatch();
 
-    const pokemonTeam = useAppSelector((state) => state.trainer?.find((trainer) => trainer.name === currentTrainer?.name)?.catchedPokemons || []);
+    // const pokemonTeam = useAppSelector((state) => state.trainer?.find((trainer) => trainer.name === currentTrainer?.name)?.catchedPokemons || []);
+    const { data: pokemonTeam, isLoading, isError } = useGetGenQuery(1);
 
-
-    function definePokemonGender(male: number, Female: number) {
+    function definePokemonGender(male: number) {
         let randomNumber = Math.floor(Math.random())
         if (randomNumber < male / 100) {
             return "Male";
@@ -82,20 +83,20 @@ function ProfilPage() {
         let pokemonData: IPokemon = {
             id: data.pokedex_id,
             name: data.name.fr,
-            sprite: data.sprites.regular,
+            sprites: data.sprites,
             category: data.category,
-            gender: data.sexe ? definePokemonGender(data.sexe.male, data.sexe.femelle) : "Unknown",
+            gender: data.sexe ? definePokemonGender(data.sexe.male) : "Unknown",
             type: data.types.name,
             natures: data.talents,
             shiny: definePokemonIsShiny(),
-            IV: [
-                data.stats.hp,
-                data.stats.atk,
-                data.stats.def,
-                data.stats.spd,
-                data.stats.spe_atk,
-                data.stats.spe_def,
-            ],
+            IV: {
+                health: data.stats.hp,
+                attack: data.stats.atk,
+                defense: data.stats.def,
+                speed: data.stats.spd,
+                specialAttack: data.stats.spe_atk,
+                specialDefense: data.stats.spe_def,
+            },
             EV: {
                 HP: Math.floor(Math.random() * 256),
                 Attack: Math.floor(Math.random() * 256),
@@ -166,7 +167,7 @@ function ProfilPage() {
                     <p>Catched pokemon's of : {currentTrainer.name}</p>
                     <ul>
                         {currentTrainer.catchedPokemons && currentTrainer.catchedPokemons.map((pokemon, index) => (
-                            <li key={index}>{pokemon.name}</li>
+                            <li key={index}>{pokemon.name.fr}</li>
                         ))}
                     </ul>
                 </div>
